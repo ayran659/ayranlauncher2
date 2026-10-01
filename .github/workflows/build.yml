@@ -8,9 +8,8 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Download Pojav source
-        run: |
-          git clone --depth 1 --branch v3_openjdk https://github.com/PojavLauncherTeam/PojavLauncher.git source
+      - name: Get repository
+        uses: actions/checkout@v4
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -18,9 +17,17 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Build launcher
-        working-directory: source
+      - name: Extract Ayran Launcher
         run: |
+          mkdir source
+          unzip -q AyranLauncher_Original_Ozgun_Arm64.zip -d source
+          echo "Project files:"
+          find source -maxdepth 2 -name gradlew -print
+
+      - name: Build launcher
+        run: |
+          PROJECT_DIR=$(dirname "$(find source -name gradlew -type f | head -1)")
+          cd "$PROJECT_DIR"
           chmod +x gradlew
           ./gradlew :app_pojavlauncher:assembleDebug --no-daemon
 
@@ -28,4 +35,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: AyranLauncher-APK
-          path: source/app_pojavlauncher/build/outputs/apk/debug/*.apk
+          path: source/**/app_pojavlauncher/build/outputs/apk/debug/*.apk
