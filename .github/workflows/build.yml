@@ -1,0 +1,31 @@
+name: Build Ayran Launcher
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Download Pojav source
+        run: |
+          git clone --depth 1 --branch v3_openjdk https://github.com/PojavLauncherTeam/PojavLauncher.git source
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Build launcher
+        working-directory: source
+        run: |
+          chmod +x gradlew
+          ./gradlew :app_pojavlauncher:assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: AyranLauncher-APK
+          path: source/app_pojavlauncher/build/outputs/apk/debug/*.apk
